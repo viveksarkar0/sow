@@ -152,7 +152,9 @@ export const initializeDatabase = async () => {
     await sequelize.authenticate()
     console.log('Database connection established successfully.')
     
-    if (process.env.NODE_ENV !== 'production') {
+    const isSqlite = sequelize.getDialect() === 'sqlite'
+    const shouldSyncInProd = process.env.SYNC_ON_START === 'true' || isSqlite
+    if (process.env.NODE_ENV !== 'production' || shouldSyncInProd) {
       await sequelize.sync({ alter: true })
       console.log('Database models synchronized.')
     }
