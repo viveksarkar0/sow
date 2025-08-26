@@ -7,6 +7,7 @@ export default function Terms({ locale = "en", setLocale }) {
   const [terms, setTerms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api'
 
   useEffect(() => {
     fetchTerms();
@@ -15,9 +16,7 @@ export default function Terms({ locale = "en", setLocale }) {
   const fetchTerms = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:3002/api/terms?locale=${locale}`
-      );
+      const response = await fetch(`${API_URL}/terms?locale=${locale}`);
       const data = await response.json();
       setTerms(data.sections || []);
     } catch (error) {
