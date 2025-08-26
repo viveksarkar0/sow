@@ -167,7 +167,6 @@ export default function Terms({ locale = "en", setLocale }) {
             ))}
           </div>
         </div>
-
         <div className="close-button-container">
           <NavLink to="/pricelist" className="close-button">
             {locale === "en" ? "Close and Go Back" : "Stäng och gå tillbaka"}

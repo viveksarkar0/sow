@@ -85,7 +85,7 @@
 }
 
 .page-header { padding-top: 10px; text-align: center; color: white; }
-.page-title { color:#fff !important; font-size: 34px; font-weight: 700;  }
+.page-title { color:#fff !important; font-size: 32px; font-weight: 700; letter-spacing: .2px; margin: 6px 0 8px; }
 
 .close-button-container { display: flex; justify-content: center; margin: 16px 0 20px; }
 .close-button {
@@ -303,8 +303,8 @@
 /* Single card wrapper for all terms content */
 .terms-content-box {
   background: rgba(255, 255, 255, 0.98);
-  padding: 32px 20px;
-  max-width: 760px;
+  padding: 32px 40px; /* more horizontal padding like reference */
+  max-width: 820px;   /* wider card */
   width: 100%;
   margin: 18px auto 0 auto; /* spacing from button */
 
@@ -385,10 +385,14 @@
 }
 
 .terms-text {
-  line-height: 1.7;
-  color: #5e6a75; /* neutral grey for body text */
-  font-size: 14px;
+  line-height: 1.2;            /* tuned for desired gap */
+  color: #5a6670;               /* neutral grey for body text */
+  font-size: 15px;              /* slightly larger */
   text-align: center;
+  max-width: 680px;             /* readable line length */
+  margin: 0 auto;               /* center the column */
+  white-space: pre-line;        /* PRESERVE line breaks from API text */
+  text-indent: 0;               /* avoid unintended first-line indent */
 }
 
 /* Make only emphasized words (e.g., BY) bold and darker */
@@ -413,7 +417,7 @@
 }
 
 /* Fine spacing for continuous document feel */
-.terms-section { margin-bottom: 22px; }
+.terms-section { margin-bottom: 6px; }
 
 .terms-text h4 {
   font-size: 18px;
@@ -423,12 +427,24 @@
 }
 
 .terms-text p {
-  margin-bottom: 15px;
+  margin: 8px 0 12px;           /* match visual gap in reference */
   background: transparent;
   border: 0;
   padding: 0;
   box-shadow: none;
+  text-indent: 0;               /* ensure no paragraph indent */
 }
+
+/* Emphasize the leading BY like reference */
+.terms-text p:first-of-type b:first-child,
+.terms-text p:first-of-type strong:first-child {
+  font-weight: 800;
+  color: #0f0f10;               /* deepest neutral */
+  letter-spacing: 0.2px;
+}
+
+/* If backend content contains <br><br>, collapse extra breaks */
+.terms-text br + br { display: none; }
 
 .terms-footer {
   display: flex;
