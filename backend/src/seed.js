@@ -61,7 +61,7 @@ Have a great day!`,
       sort_order: 100
     }
   ],
-  ssv: [
+  sv: [
     {
       section: 'full_terms',
       title: 'Fullständiga villkor och registreringsmeddelande',
