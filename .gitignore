@@ -1,0 +1,35 @@
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build
+frontend/dist/
+frontend/.vite/
+
+# Env
+.env
+.env.*
+frontend/.env*
+backend/.env*
+
+# OS/Editor
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# DB/Local
+backend/dev.db
+backend/database.db
+
+# Coverage
+coverage/
+
+# Misc
+*.local
