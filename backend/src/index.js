@@ -74,6 +74,20 @@ async function start() {
   try {
     // Initialize database connection
     await initializeDatabase()
+    // Optional: seed data in production when explicitly enabled
+    if (process.env.SEED_ON_START === 'true') {
+      try {
+        const seedModulePath = process.env.SEED_SCRIPT === 'seedDatabase' 
+          ? './seedDatabase.js' 
+          : './seed.js'
+        const { seedDatabase } = await import(seedModulePath)
+        await seedDatabase()
+        server.log.info('Database seeding completed on startup')
+      } catch (seedErr) {
+        server.log.error('Database seeding failed on startup')
+        server.log.error(seedErr)
+      }
+    }
     
     // Start server (Render provides PORT env)
     await server.listen({ 
