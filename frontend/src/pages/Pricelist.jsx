@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { FiSearch, FiPlus, FiPrinter, FiSettings, FiChevronUp, FiChevronRight, FiMoreHorizontal } from 'react-icons/fi'
 import "./Pricelist.css";
 import Header from "../components/pricelist/Header";
@@ -11,6 +11,8 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
   const [searchProduct, setSearchProduct] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [locale, setLocale] = useState(initialLocale);
+  // debouncers per product:field
+  const debounceRefs = useRef({});
 
   const STR = {
     en: {
@@ -57,7 +59,11 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
       if (e.key === "Escape") setSidebarOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      // clear any pending debounced timers on unmount
+      Object.values(debounceRefs.current || {}).forEach((t) => clearTimeout(t));
+    };
   }, []);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api'
@@ -75,46 +81,43 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
     }
   };
 
-  const updateProduct = async (id, field, value) => {
+  const patchProduct = async (id, field, value) => {
     try {
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [field]: value }),
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        // Update local state with the actual response from server
-        setProducts((prev) =>
-          prev.map((product) =>
-            product.id === id ? { ...product, ...result.product } : product
-          )
-        );
-      } else {
+      if (!response.ok) {
         const error = await response.json();
         console.error("❌ Failed to update product:", error);
-        alert(`Failed to update product: ${error.message || "Unknown error"}`);
       }
     } catch (error) {
       console.error("❌ Network error updating product:", error);
-      alert(`Network error: ${error.message}`);
     }
   };
 
-  const filteredProducts = products.filter((product) => {
-    const matchesArticle =
-      !searchArticle ||
-      (product.article_no &&
-        product.article_no.toLowerCase().includes(searchArticle.toLowerCase()));
-    const matchesProduct =
-      !searchProduct ||
-      (product.name &&
-        product.name.toLowerCase().includes(searchProduct.toLowerCase()));
-    return matchesArticle && matchesProduct;
-  });
+  // Update UI immediately, debounce server PATCH for smooth typing
+  const scheduleUpdate = (id, field, value) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, [field]: value } : p))
+    );
+    const key = `${id}:${field}`;
+    if (debounceRefs.current[key]) clearTimeout(debounceRefs.current[key]);
+    debounceRefs.current[key] = setTimeout(() => {
+      patchProduct(id, field, value);
+    }, 500);
+  };
+
+  const filteredProducts = useMemo(() => {
+    const a = searchArticle.toLowerCase();
+    const b = searchProduct.toLowerCase();
+    return products.filter((product) => {
+      const matchesArticle = !a || (product.article_no || "").toLowerCase().includes(a);
+      const matchesProduct = !b || (product.name || "").toLowerCase().includes(b);
+      return matchesArticle && matchesProduct;
+    });
+  }, [products, searchArticle, searchProduct]);
 
   if (loading) {
     return (
@@ -171,18 +174,21 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
             </div>
 
             <div className="toolbar">
-              <button className="pill-button green"><FiPlus aria-hidden="true" /> {t.newProduct}</button>
-              <button className="pill-button blue"><FiPrinter aria-hidden="true" /> {t.printList}</button>
-              <button className="pill-button gray"><FiSettings aria-hidden="true" /> {t.advanced}</button>
+              <button className="pill-button "><FiPlus aria-hidden="true" color="green" /> {t.newProduct}</button>
+              <button className="pill-button "><FiPrinter aria-hidden="true" color="blue" />  {t.printList}</button>
+              <button className="pill-button g"><FiSettings aria-hidden="true" color="blue" /> {t.advanced}</button>
             </div>
 
            
           </div>
-           <div className="toolbar2">
-              <button className="pill-button green" aria-label="Add"><FiPlus aria-hidden="true" /></button>
-              <button className="pill-button blue" aria-label="Print"><FiPrinter aria-hidden="true" /></button>
-              <button className="pill-button gray" aria-label="Settings"><FiSettings aria-hidden="true" /></button>
+          <div className="toolbar2">
+              <button className="pill-button2 " aria-label="Add"><FiPlus aria-hidden="true" color="green" /></button>
+              <button className="pill-button2 " aria-label="Print"><FiPrinter aria-hidden="true " color="blue" /></button>
+              <button className="pill-button2 " aria-label="Settings"><FiSettings aria-hidden="true" color="blue" /></button>
             </div>
+
+          {/* Mobile list headers (Product/Service | Price) */}
+        
 
           <div className="table-wrapper desktop-view">
             <table className="data-table">
@@ -208,7 +214,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="text"
                         value={product.article_no || ""}
                         onChange={(e) =>
-                          updateProduct(
+                          scheduleUpdate(
                             product.id,
                             "article_no",
                             e.target.value
@@ -222,7 +228,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="text"
                         value={product.name || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "name", e.target.value)
+                          scheduleUpdate(product.id, "name", e.target.value)
                         }
                         className="field-input wide-input"
                       />
@@ -232,7 +238,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="number"
                         value={product.in_price || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "in_price", e.target.value)
+                          scheduleUpdate(product.id, "in_price", e.target.value)
                         }
                         className="field-input number-input"
                       />
@@ -242,7 +248,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="number"
                         value={product.price || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "price", e.target.value)
+                          scheduleUpdate(product.id, "price", e.target.value)
                         }
                         className="field-input number-input"
                       />
@@ -252,7 +258,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="text"
                         value={product.unit || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "unit", e.target.value)
+                          scheduleUpdate(product.id, "unit", e.target.value)
                         }
                         className="field-input"
                       />
@@ -262,7 +268,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="number"
                         value={product.in_stock || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "in_stock", e.target.value)
+                          scheduleUpdate(product.id, "in_stock", e.target.value)
                         }
                         className="field-input number-input"
                       />
@@ -272,7 +278,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="text"
                         value={product.description || ""}
                         onChange={(e) =>
-                          updateProduct(
+                          scheduleUpdate(
                             product.id,
                             "description",
                             e.target.value
@@ -310,7 +316,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="text"
                         value={product.article_no || ""}
                         onChange={(e) =>
-                          updateProduct(
+                          scheduleUpdate(
                             product.id,
                             "article_no",
                             e.target.value
@@ -324,7 +330,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="text"
                         value={product.name || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "name", e.target.value)
+                          scheduleUpdate(product.id, "name", e.target.value)
                         }
                         className="field-input"
                       />
@@ -334,7 +340,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="number"
                         value={product.price || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "price", e.target.value)
+                          scheduleUpdate(product.id, "price", e.target.value)
                         }
                         className="field-input"
                       />
@@ -344,7 +350,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="number"
                         value={product.in_stock || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "in_stock", e.target.value)
+                          scheduleUpdate(product.id, "in_stock", e.target.value)
                         }
                         className="field-input"
                       />
@@ -354,7 +360,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
                         type="text"
                         value={product.unit || ""}
                         onChange={(e) =>
-                          updateProduct(product.id, "unit", e.target.value)
+                          scheduleUpdate(product.id, "unit", e.target.value)
                         }
                         className="field-input"
                       />
@@ -376,7 +382,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
           <input
             type="text"
             value={product.name || ""}
-            onChange={(e) => updateProduct(product.id, "name", e.target.value)}
+            onChange={(e) => scheduleUpdate(product.id, "name", e.target.value)}
             className="mobile-input"
           />
         </div>
@@ -384,7 +390,7 @@ export default function Pricelist({ locale: initialLocale = "en" }) {
           <input
             type="number"
             value={product.price || ""}
-            onChange={(e) => updateProduct(product.id, "price", e.target.value)}
+            onChange={(e) => scheduleUpdate(product.id, "price", e.target.value)}
             className="mobile-input"
           />
         </div>

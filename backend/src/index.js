@@ -64,7 +64,7 @@ await server.register(productsRoutes, { prefix: '/api' })
 /**
  * Server startup configuration
  */
-const port = Number(process.env.PORT || 3001)
+const port = Number(process.env.PORT || 3002)
 const host = process.env.HOST || '0.0.0.0'
 
 /**
