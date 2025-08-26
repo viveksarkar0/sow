@@ -12,8 +12,6 @@ frontend/dist/
 frontend/.vite/
 
 # Env
-.env
-.env.*
 frontend/.env*
 backend/.env*
 
@@ -22,7 +20,6 @@ backend/.env*
 *.swp
 *.swo
 .idea/
-.vscode/
 
 # DB/Local
 backend/dev.db
@@ -33,3 +30,4 @@ coverage/
 
 # Misc
 *.local
+config.bat
