@@ -7,11 +7,33 @@ export default function Terms({ locale = "en", setLocale }) {
   const [terms, setTerms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [bgReady, setBgReady] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api'
 
   useEffect(() => {
     fetchTerms();
   }, [locale]);
+
+  // Preload large background image and only enable it when decoded
+  useEffect(() => {
+    const url = "https://storage.123fakturera.se/public/wallpapers/sverige43.jpg";
+    const img = new Image();
+    img.src = url;
+    const markReady = () => setBgReady(true);
+    if (img.complete) {
+      // Already in cache
+      markReady();
+    } else if (img.decode) {
+      img.decode().then(markReady).catch(markReady);
+    } else {
+      img.onload = markReady;
+      img.onerror = markReady; // don't block UI if it fails
+    }
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, []);
 
   const fetchTerms = async () => {
     try {
@@ -45,7 +67,7 @@ export default function Terms({ locale = "en", setLocale }) {
   }
 
   return (
-    <div className="terms-container">
+    <div className={`terms-container ${bgReady ? 'bg-ready' : ''}`}>
       {/* Navigation Header */}
       <nav className="top-navigation">
         <div className="nav-container">
