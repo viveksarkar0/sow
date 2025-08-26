@@ -103,11 +103,11 @@
   background: #28a745;
   color: #fff;
   text-decoration: none;
-  padding: 10px 20px;
+  padding: 7px 20px;
   border: none;
   border-radius: 999px;
   font-size: 22px;
-  font-weight: 200;
+  font-weight: 100;
   box-shadow: 0 10px 24px rgba(40,167,69,0.35);
   cursor: pointer;
 }
@@ -304,9 +304,11 @@
 
 /* Main Content - Centered modal matching reference */
 .main-content, .content {
+  /* reduce side padding so the card can occupy more width */
+  padding: 16px 6px;
+  margin: 10px 0;
   position: relative;
   z-index: 100;
-  padding: 60px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -538,9 +540,9 @@
   .terms-content-box {
     padding: 20px;
     max-width: 760px;
-    width: 92% !important;           /* keep gutters on mobile */
-    margin: 0 auto !important;       /* center card */
-    border-radius: 16px;              /* keep rounded corners */
+    width: 100% !important;           
+    margin: 0 auto !important;      
+    border-radius: 16px;           
   }
 
   /* Ensure container doesn't constrain width on mobile */
@@ -592,9 +594,14 @@
   .terms-content-box {
     padding: 15px;
     max-width: 760px;
-    width: 90% !important;      /* a bit more gutter on very small screens */
+    width: 95% !important;      
     margin: 0 auto !important;
     border-radius: 16px;
+  }
+
+  /* Let the text column use full width on mobile so the card looks wider */
+  .terms-text {
+    max-width: none;
   }
 
   .terms-heading {
