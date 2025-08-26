@@ -571,6 +571,19 @@
   }
 }
 
+/* Safari/iOS: use small viewport height to avoid jump when URL bar hides */
+@supports (-webkit-touch-callout: none) {
+  .terms-container {
+    min-height: 100svh;
+  }
+  .background-container {
+    height: 100svh;
+  }
+  .main-content, .content {
+    min-height: calc(100svh - 80px);
+  }
+}
+
 @media (max-width: 480px) {
   .navigation-section {
     padding: 10px 15px;
