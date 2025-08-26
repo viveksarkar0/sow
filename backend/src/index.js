@@ -18,10 +18,24 @@ const server = Fastify({
 /**
  * Register plugins and middleware
  */
-await server.register(cors, { 
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL || false 
-    : true 
+await server.register(cors, {
+  origin: (origin, cb) => {
+    // Allow server-to-server or same-origin
+    if (!origin) return cb(null, true)
+
+    const isProduction = process.env.NODE_ENV === 'production'
+    if (!isProduction) return cb(null, true)
+
+    try {
+      const allowedExact = process.env.FRONTEND_URL
+      const hostname = new URL(origin).hostname
+      const isVercel = hostname.endsWith('.vercel.app')
+      const isAllowed = (allowedExact && origin === allowedExact) || isVercel
+      cb(null, isAllowed)
+    } catch {
+      cb(null, false)
+    }
+  },
 })
 
 // Error handling
