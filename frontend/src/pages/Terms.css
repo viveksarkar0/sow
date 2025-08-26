@@ -92,11 +92,11 @@
   background: #28a745;
   color: #fff;
   text-decoration: none;
-  padding: 18px 28px;
+  padding: 10px 20px;
   border: none;
   border-radius: 999px;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 200;
   box-shadow: 0 10px 24px rgba(40,167,69,0.35);
   cursor: pointer;
 }
