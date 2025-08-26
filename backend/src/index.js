@@ -77,10 +77,8 @@ async function start() {
     // Optional: seed data in production when explicitly enabled
     if (process.env.SEED_ON_START === 'true') {
       try {
-        const seedModulePath = process.env.SEED_SCRIPT === 'seedDatabase' 
-          ? './seedDatabase.js' 
-          : './seed.js'
-        const { seedDatabase } = await import(seedModulePath)
+        // Single, canonical seeder: seeds BOTH terms and products
+        const { seedDatabase } = await import('./seed.js')
         await seedDatabase()
         server.log.info('Database seeding completed on startup')
       } catch (seedErr) {

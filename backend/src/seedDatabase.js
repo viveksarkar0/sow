@@ -1,6 +1,6 @@
 import { sequelize, Product } from './models/index.js'
 
-async function seedDatabase() {
+export async function seedDatabase() {
   try {
     console.log('Starting database seeding...')
     
@@ -245,5 +245,3 @@ async function seedDatabase() {
     process.exit(1)
   }
 }
-
-seedDatabase()

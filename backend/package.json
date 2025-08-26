@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "seed": "node src/seed.js"
+    "seed": "node src/seed.js",
+    "start:seed": "SEED_ON_START=true node src/index.js"
   },
   "dependencies": {
     "fastify": "4.28.1",
