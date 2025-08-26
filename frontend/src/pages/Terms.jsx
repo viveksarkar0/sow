@@ -68,6 +68,16 @@ export default function Terms({ locale = "en", setLocale }) {
 
   return (
     <div className={`terms-container ${bgReady ? 'bg-ready' : ''}`}>
+      {bgReady && (
+        <div className="background-container" aria-hidden="true">
+          <img
+            className="background-image"
+            src="https://storage.123fakturera.se/public/wallpapers/sverige43.jpg"
+            alt=""
+            decoding="async"
+          />
+        </div>
+      )}
       {/* Navigation Header */}
       <nav className="top-navigation">
         <div className="nav-container">
